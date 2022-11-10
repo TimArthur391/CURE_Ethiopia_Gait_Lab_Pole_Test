@@ -1,0 +1,5 @@
+{
+    "python.pythonPath":"C:\\Users\\gaitlab\\miniconda3\\envs\\PoleTest2\\python.exe",
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.profiles.windows#": "C:\\Windows\\System32\\cmd.exe"
+}

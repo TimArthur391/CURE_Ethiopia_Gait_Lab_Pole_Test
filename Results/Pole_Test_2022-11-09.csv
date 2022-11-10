@@ -1,0 +1,15 @@
+,Passed?,RMSE_values
+COP1y_step0___ycoord_FP1_step0,Pass,10.141070149357606
+COP1y_step1___ycoord_FP1_step1,Pass,4.1178248943483124
+COP1y_step2___ycoord_FP1_step2,Pass,5.4360686969736145
+COP1y_step3___ycoord_FP1_step3,Pass,15.218122545702697
+COP1x_step0___xcoord_FP1_step0,Pass,6.4085498681456645
+COP1x_step1___xcoord_FP1_step1,Pass,7.9747258256240645
+COP1x_step2___xcoord_FP1_step2,Pass,9.948886700183492
+COP1x_step3___xcoord_FP1_step3,Pass,9.548357492859049
+COP2y_step1___ycoord_FP2_step1,Pass,10.274576097686266
+COP2y_step2___ycoord_FP2_step2,Pass,6.212076156304892
+COP2y_step3___ycoord_FP2_step3,Pass,9.800729233251507
+COP2x_step1___xcoord_FP2_step1,Pass,6.747636134872805
+COP2x_step2___xcoord_FP2_step2,Pass,6.7155168886567855
+COP2x_step3___xcoord_FP2_step3,Pass,6.457227129630301
