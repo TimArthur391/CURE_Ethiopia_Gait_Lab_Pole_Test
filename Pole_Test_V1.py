@@ -34,14 +34,15 @@ def main() -> None:
     })
 
     medians = []
+    df_len = len(df['COP1x'])
     for x in range(vicon.GetUnlabeledCount()):
         trajX, trajY, trajZ, trajExists = vicon.GetUnlabeled(x)
         df_labelx = 'trajX' + str(x)
         df_labely = 'trajY' + str(x)
         df_labelz = 'trajZ' + str(x)
-        df[df_labelx] = trajX
-        df[df_labely] = trajY
-        df[df_labelz] = trajZ
+        df[df_labelx] = trajX[:df_len]
+        df[df_labely] = trajY[:df_len]
+        df[df_labelz] = trajZ[:df_len]
         
         medians.append(np.median(df[df_labelz]))
         
@@ -157,7 +158,13 @@ def main() -> None:
     COP_label_names = ['COP1y_step', 'COP1x_step', 'COP2y_step', 'COP2x_step']
     coord_label_names = ['ycoord_FP1_step', 'xcoord_FP1_step', 'ycoord_FP2_step', 'xcoord_FP2_step']
     for x in range(4):
-        for step in range(no_of_steps_FP1):
+        
+        if '1' in COP_label_names[x]:
+            no_of_steps_FPX = no_of_steps_FP1
+        elif '2' in COP_label_names[x]:
+            no_of_steps_FPX = no_of_steps_FP2
+        
+        for step in range(no_of_steps_FPX):
             COP_label = COP_label_names[x] + str(step)
             coord_label = coord_label_names[x] + str(step)
             
@@ -177,6 +184,14 @@ def main() -> None:
             else:
                 pass_or_fail.append('Fail')
 
+    average_distance_between_markers = np.mean(df['distance_between_Markers'])
+    RMS_labels.append('Average_Distance_Between_Markers')
+    RMS_values.append(average_distance_between_markers)
+    if average_distance_between_markers <= 215 & average_distance_between_markers >= 205:
+        pass_or_fail.append('Pass')
+    else:
+        pass_or_fail.append('Fail')
+                
     results = pd.DataFrame({
         'RMSE_values':RMS_values,
         'Passed?':pass_or_fail}, index=RMS_labels)
