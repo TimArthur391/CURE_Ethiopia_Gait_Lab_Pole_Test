@@ -11,7 +11,6 @@ vicon = ViconNexus.ViconNexus()
 sys.path.append( 'C:\\Users\\gaitlab\\miniconda3\\envs\\PoleTest2\\Lib\\site-packages')
 sys.path.append( 'C:\\Program Files (x86)\\Vicon\\Nexus2.12\\SDK\\Win32\\Python')
 
-#def main() -> None:
 #remember coordinates of FP 1 and 2 are rotated 90deg
 COP1y, ready, rate = vicon.GetDeviceChannel(6,3,1)
 COP1x, ready, rate = vicon.GetDeviceChannel(6,3,2)
@@ -198,8 +197,5 @@ results = pd.DataFrame({
 
 date_name = datetime.today().strftime('%Y-%m-%d')
 filename = 'Pole_Test_' + date_name + '.csv'
-filepath = 'C:\\Users\\gaitlab\\Documents\\GitHub\\CURE_Ethiopia_Gait_Lab_Pole_Test\\Results\\' + filename
+filepath = 'C:\\Users\\gaitlab\\Documents\\Pole_Test_Results\\' + filename
 results.to_csv(filepath)
-
-#if __name__ == "__main__":
-   # main()
