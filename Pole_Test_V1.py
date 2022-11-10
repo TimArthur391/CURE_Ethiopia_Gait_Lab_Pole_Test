@@ -184,7 +184,7 @@ def main() -> None:
             else:
                 pass_or_fail.append('Fail')
 
-    average_distance_between_markers = np.mean(df['distance_between_Markers'])
+    average_distance_between_markers = np.mean(df['distance_between_Markers'][df['distance_between_Markers']!=0][1000:-1000])
     RMS_labels.append('Average_Distance_Between_Markers')
     RMS_values.append(average_distance_between_markers)
     if average_distance_between_markers <= 215 & average_distance_between_markers >= 205:
