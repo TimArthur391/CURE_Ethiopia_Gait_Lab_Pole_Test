@@ -1,5 +1,12 @@
 # CURE_Ethiopia_Gait_Lab_Pole_Test
- As part of the CMAS requirements for a gait lab, a 'pole test' must be completed everyday that the lab is used for patient data collection. For more information on the pole test see the following references:
+ As part of the CMAS requirements for a gait lab, a 'pole test' must be completed everyday that the lab is used for patient data collection. 
+ 
+ The test detailed here uses: (1) a rigid pole with a marker pair placed near the top, and a marker pair placed near the bottom; (2) whilst Vicon Nexus is recording, the pole should be pressed into all 4 corners of each force plate, with pressure being applied by pivoting the pole in a circular motion; (3) the trial is reconstructed and 'Pole_Test_Vx.py' is run; (4) the midpoint of each pair is found and used to construct a line between these 2 points within the local coordinate system; (5) the x and y coordinates where this line intersects the floor (where z = 0 in the local coordinate system), is compared to the x and y coordinates output from the force plates centre of pressure measurement; (6) the root mean squared error between these coordinates is calculated, and if it is less than 20mm, then it is deemed a pass.
+
+ The jupyter notebook that was used to analyse, write and debug this code has been included as it explains the code step by step.
+
+ 
+ For more information on the pole test see the following references:
  
 Baker R. The “Poker” test: a spot check to confirm the accuracy of kinetic gait data. Gait Posture. 1997;5(2):177-8.
 
