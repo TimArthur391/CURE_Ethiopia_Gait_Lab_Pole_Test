@@ -22,6 +22,8 @@ COP2z, ready, rate = vicon.GetDeviceChannel(7,3,3)
 Fz_FP1, ready, rate = vicon.GetDeviceChannel(6,1,3)
 Fz_FP2, ready, rate = vicon.GetDeviceChannel(7,1,3)
 
+#marker trajectories are sampled at 100Hz whereas force plates are sampled at 1000Hz => take re-sample the force plate data
+#occasionally the forceplates can collected for a slightly longer time than the force plates => shorten this trial by 20 frames
 arr_leng = len(COP1x)
 df = pd.DataFrame({
     'COP1x' :COP1x[:arr_leng-20:10],
@@ -33,6 +35,7 @@ df = pd.DataFrame({
 })
 
 medians = []
+#make sure all data sources have an equal amount of data 
 df_len = len(df['COP1x'])
 for x in range(vicon.GetUnlabeledCount()):
     trajX, trajY, trajZ, trajExists = vicon.GetUnlabeled(x)
@@ -46,7 +49,7 @@ for x in range(vicon.GetUnlabeledCount()):
     medians.append(np.median(df[df_labelz]))
     
 medians = pd.Series(medians)
-medians.sort_values(ascending=False)
+medians.sort_values(ascending=False) # Markers can get lost as the pole is being moved into and out of the reference space, this creates additional trajectories that are very short
 higher_markers_indexs = medians.nlargest(4).index # The 4 highest medians of the marker trajectories in the z direction, correspond to the top markers (highest 2 medians) and the bottom markers (2nd highest 2 medians)
 
 fs = 100
@@ -70,13 +73,14 @@ for col in df.columns:
 #top group
 base_label_names = ['trajX', 'trajY', 'trajZ']
 df_labels = []
-for x in higher_markers_indexs: #this variable is defined in step 4
+for x in higher_markers_indexs: #this variable is defined in step 4 / line 53
     for y in base_label_names:
         #this will give the correct label i.e. 'trajX0' or 'trajX3'
         label = y + str(x)
         df_labels.append(label)
 
 # because of the way the data was sorted above, the order of the labels will always be defined in the same way
+# get the coordinate of the point precisely in the middle of the marker pairs
 df['midXtop'] = ( df[df_labels[0]] + df[df_labels[3]] ) / 2
 df['midYtop'] = ( df[df_labels[1]] + df[df_labels[4]] ) / 2
 df['midZtop'] = ( df[df_labels[2]] + df[df_labels[5]] ) / 2
@@ -94,6 +98,7 @@ df['ycoord'] = ((df['diffY'] * -1 * df['midZbot'])/(df['diffZ'])) + df['midYbot'
 
 df['distance_between_Markers'] = (((df['diffX'])**2)+((df['diffY'])**2)+((df['diffZ'])**2))**0.5
 
+# the forceplate origins need to aligned with the local coordinate system
 df['COP1x'] = df['COP1x'] + 300
 df['COP1y'] = ( df['COP1y'] * -1 ) - 200
 df['COP2x'] = ( df['COP2x'] * -1 ) + 200
@@ -118,9 +123,10 @@ Fz_FP2 = np.array(Fz_FP2[:arr_leng:10])
 base_labels = ['COP1y', 'COP1x', 'COP2y', 'COP2x', 'ycoord', 'xcoord']
 no_of_steps_FP1 = 0
 no_of_steps_FP2 = 0
-#start with force plate 1
+
+# this splits up the data into each time the pole is pressed down on the force plate, so that each step can be compared
 for label in base_labels:
-    if '1' in label:
+    if '1' in label: #data from force plate one
         idx = np.where(Fz_FP1 != 0)[0]
         split_array = np.split(df[label][idx],np.where(np.diff(idx)!=1)[0]+1) # This bit of code will split the data series into a multiple arrays, using the sections where Fz = 0 as the splitting marker
         no_of_steps = len(split_array)
@@ -129,7 +135,7 @@ for label in base_labels:
             step_label = label + '_step' + str(step)
             df[step_label] = split_array[step] #This bit of code will assign each split array to its own data series with an identifiable name
             
-    elif '2' in label:
+    elif '2' in label: #data from force plate two
         idx = np.where(Fz_FP2 != 0)[0]
         split_array = np.split(df[label][idx],np.where(np.diff(idx)!=1)[0]+1)
         no_of_steps = len(split_array)
@@ -137,7 +143,7 @@ for label in base_labels:
         for step in range(no_of_steps):
             step_label = label + '_step' + str(step)
             df[step_label] = split_array[step]
-    else:
+    else: #data from the marker trajectories
         idx = np.where(Fz_FP1 != 0)[0]
         split_array = np.split(df[label][idx],np.where(np.diff(idx)!=1)[0]+1)
         no_of_steps = len(split_array)
@@ -158,6 +164,7 @@ COP_label_names = ['COP1y_step', 'COP1x_step', 'COP2y_step', 'COP2x_step']
 coord_label_names = ['ycoord_FP1_step', 'xcoord_FP1_step', 'ycoord_FP2_step', 'xcoord_FP2_step']
 for x in range(4):
     
+    #check how many steps they were on force plate 1 and 2
     if '1' in COP_label_names[x]:
         no_of_steps_FPX = no_of_steps_FP1
     elif '2' in COP_label_names[x]:
@@ -167,14 +174,17 @@ for x in range(4):
         COP_label = COP_label_names[x] + str(step)
         coord_label = coord_label_names[x] + str(step)
         
+        #skip any steps that are less than 200 frames in length - these can occur and are artificats
         if len(df[COP_label].dropna()) < 200:
             continue
         
+        #truncate the data, because the start and end of the data sereies have artifacts/noise due to the impact against the plate
         COP_series = df[COP_label].dropna()
         coord_series = df[coord_label].dropna()
         truncated_COP_series = COP_series[25:len(COP_series)-25]
         truncated_coord_series = coord_series[25:len(coord_series)-25]
         
+        #calulate the root mean sqaured error for each step, and assign if it has passed or failed
         MSE = (np.square(np.subtract(truncated_COP_series,truncated_coord_series))).mean() #mean squared error
         RMS_values.append(MSE ** 0.5) #root mean squared error
         RMS_labels.append(COP_label + '___' + coord_label)
